@@ -51,6 +51,7 @@ else:
         results["meta"]["csvs"].append(name)
 
         csv = pandas.read_csv(config["profiles"]+"/"+name)
+        first = csv.columns[0]
 
         if not shape:
             #first csv
@@ -59,10 +60,19 @@ else:
             if shape[1] == 16:
                 #assume it contains tensor measures (4x4)
                 results["meta"]["tensor_measures"] = True
+                if first != "ad_1":
+                    results["errors"].append("first column should be ad_1 but it's "+first)
+            elif shape[1] == 12:
+                results["meta"]["noddi_measures"] = True
+                if first != "ndi_1":
+                    results["errors"].append("first column should be ndi_1 but it's "+first)
             elif shape[1] == 28:
                 #assume it contains tensor and noddi measures (7x4)
                 results["meta"]["tensor_measures"] = True
                 results["meta"]["noddi_measures"] = True
+
+                if first != "ad_1":
+                    results["errors"].append("first column should be ad_1 but it's "+first)
             else:
                 results["errors"].append("csv should have eitehr 16(tensor only) or 28(tensor+noddi) columns");
         else:
@@ -70,28 +80,12 @@ else:
                 results["errors"].append("csv shape doesn't match for "+name+" "+str(csv.shape))
 
         #check number of NaNs
-        nans = csv["ad_1"].isnull().sum()
+        nans = csv[first].isnull().sum()
         if nans > shape[0]*0.2:
             results["warnings"].append(str(nans/shape[0]*100)+"% of rows are NaNs for "+name)
 
-        if nans == 0:
-            #fit 2nd degree polynomial to FA
-            #TODO..
-            None
-            #polynomial_features = PolynomialFeatures(degree=2)
-            #x_poly = polynomial_features.fit_transform([csv['ad_1']])
-            #model = LinearRegression()
-            #model.fit(x_poly, [csv.index.values])
-            #print(polynomial_features.get_feature_names())
-            #y_poly_pred = model.predict(x_poly)
-
         csv.to_csv("output/profiles/"+name, index=False, na_rep='NaN')
         csv.to_csv("secondary/profiles/"+name, index=False, na_rep='NaN', float_format="%.6f")
-
-        #let's just copy all the files to secondary..
-        #if os.path.lexists("secondary/profiles/"+name):
-        #    os.remove("secondary/profiles/"+name)
-        #os.symlink("../../output/profiles/"+name, "secondary/profiles/"+name)
 
 with open("product.json", "w") as fp:
     #json.dump(results, fp, cls=NumpyEncoder)
