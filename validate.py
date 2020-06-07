@@ -57,16 +57,17 @@ else:
             #first csv
             shape = csv.shape
             results["meta"]["nodes"] = shape[0]
-            if shape[1] == 16:
+            if shape[1] == 19:
                 #assume it contains tensor measures (4x4)
                 results["meta"]["tensor_measures"] = True
                 if first != "ad_1":
                     results["errors"].append("first column should be ad_1 but it's "+first)
-            elif shape[1] == 12:
+            elif shape[1] == 15:
                 results["meta"]["noddi_measures"] = True
+                #ndi_1,ndi_2,isovf_1,isovf_2,odi_1,odi_2,ndi_inverse_1,ndi_inverse_2,isovf_inverse_1,isovf_inverse_2,odi_inverse_1,odi_inverse_2,x_coords,y_coords,z_coords
                 if first != "ndi_1":
                     results["errors"].append("first column should be ndi_1 but it's "+first)
-            elif shape[1] == 28:
+            elif shape[1] == 31:
                 #assume it contains tensor and noddi measures (7x4)
                 results["meta"]["tensor_measures"] = True
                 results["meta"]["noddi_measures"] = True
@@ -74,7 +75,7 @@ else:
                 if first != "ad_1":
                     results["errors"].append("first column should be ad_1 but it's "+first)
             else:
-                results["errors"].append("csv should have eitehr 16(tensor only) or 28(tensor+noddi) columns");
+                results["errors"].append("csv should have 15(noddi only), 19(tensor only) or 31(tensor+noddi) columns");
         else:
             if shape != csv.shape:
                 results["errors"].append("csv shape doesn't match for "+name+" "+str(csv.shape))
